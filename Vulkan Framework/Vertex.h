@@ -13,5 +13,4 @@ struct Vertex
 
 	static std::array<VkVertexInputAttributeDescription, 2> getAttributeDescriptions();
 
-	int test;
 };
