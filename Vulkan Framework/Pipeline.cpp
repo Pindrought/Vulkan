@@ -3,7 +3,7 @@
 #include <iostream>
 
 
-bool Pipeline::Initialize(LogicalDevice & logical_device, Swapchain & swapchain, VkRenderPass renderpass)
+bool Pipeline::Initialize(LogicalDevice & logical_device, Swapchain & swapchain, VkRenderPass renderpass, std::vector<DescriptorSetLayout> descriptor_set_layouts)
 {
 	Release();
 
@@ -21,7 +21,7 @@ bool Pipeline::Initialize(LogicalDevice & logical_device, Swapchain & swapchain,
 		return false;
 	}
 
-	if (!layout.Initialize(logical_device, swapchain, renderpass))
+	if (!layout.Initialize(logical_device, swapchain, renderpass, descriptor_set_layouts))
 	{
 		std::cerr << "Failed to initialize pipeline layout." << std::endl;
 		return false;

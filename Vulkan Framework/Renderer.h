@@ -13,6 +13,7 @@
 #include "Semaphore.h"
 #include "Fence.h"
 #include "VertexBuffer.h"
+#include "UniformBuffer.h"
 
 class Renderer
 {
@@ -29,6 +30,8 @@ private:
 	CommandPool command_pool;
 	PhysicalDevice physical_device;
 	VertexBuffer vertex_buffer;
+	DescriptorSetLayout descriptor_set_layout;
+	UniformBuffer uniform_buffer;
 
 	std::vector<Semaphore> image_available_semaphores;
 	std::vector<Semaphore> render_finished_semaphores;
@@ -38,6 +41,7 @@ private:
 	size_t currentFrame = 0;
 
 	std::vector<Vertex> vertices;
+	std::vector<uint16_t> indices;
 
 public:
 	bool Initialize(uint32_t width=800, uint32_t height = 600, std::string title = "Vulkan Window");

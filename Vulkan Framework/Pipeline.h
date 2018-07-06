@@ -3,7 +3,7 @@
 class Pipeline
 {
 public:
-	bool Initialize(LogicalDevice & logical_device, Swapchain & swapchain, VkRenderPass renderpass);
+	bool Initialize(LogicalDevice & logical_device, Swapchain & swapchain, VkRenderPass renderpass, std::vector<DescriptorSetLayout> descriptor_set_layouts);
 	void Release();
 	bool initialized = false;
 	VkPipeline handle = VK_NULL_HANDLE;

@@ -13,17 +13,16 @@ bool Renderer::Initialize(uint32_t width, uint32_t height, std::string title)
 	this->width = width;
 	this->height = height;
 
+
 	vertices =
 	{
-		{ {-0.5f, -0.5f }, { 1.0f, 1.0f, 1.0f } },
-		{ { 0.5f, -0.5f },{ 0.0f, 1.0f, 0.0f } },
-		{ { 0.5f, 0.5f },{ 0.0f, 0.0f, 1.0f } },
-		{ { -0.5f, -0.5f },{ 1.0f, 1.0f, 1.0f } },
-		{ { 0.5f, 0.5f },{ 0.0f, 0.0f, 1.0f } },
-		{ { -0.5f, 0.5f },{ 0.0f, 1.0f, 0.0f } }
+		{ { -0.5f, -0.5f, 0.0f },{ 0.2f, 0.2f, 0.2f } }, //top left
+		{ { 0.5f, -0.5f, 0.0f },{ 0.2f, 0.2f, 0.2f } }, //top right
+		{ { 0.5f, 0.5f, 0.0f },{ 1.0f, 1.0f, 1.0f } }, //bottom right
+		{ { -0.5f, 0.5f, 0.0f },{ 1.0f, 1.0f, 1.0f } } //bottom left
 	};
 
-
+	indices = { 0, 1, 2, 2, 3, 0 };
 
 	if (!vulkan_library.Load())
 	{
@@ -103,7 +102,15 @@ bool Renderer::Initialize(uint32_t width, uint32_t height, std::string title)
 		return false;
 	}
 
-	if (!pipeline.Initialize(logical_device, swapchain, renderpass.handle))
+	if (!descriptor_set_layout.Initialize(logical_device))
+	{
+		std::cerr << "Failed to initialize descriptor set layout." << std::endl;
+		return false;
+	}
+
+	std::vector<DescriptorSetLayout> descriptor_set_layouts = { descriptor_set_layout };
+
+	if (!pipeline.Initialize(logical_device, swapchain, renderpass.handle, descriptor_set_layouts))
 	{
 		std::cerr << "Failed to initialize pipeline." << std::endl;
 		return false;
@@ -115,15 +122,33 @@ bool Renderer::Initialize(uint32_t width, uint32_t height, std::string title)
 		return false;
 	}
 
-	if (!vertex_buffer.Initialize(logical_device, vertices))
+	if (!command_pool.Initialize(physical_device, logical_device, swapchain, pipeline, framebuffers, renderpass, vertex_buffer))
+	{
+		std::cerr << "Failed to initialize command pool." << std::endl;
+		return false;
+	}
+
+	if (!vertex_buffer.Initialize(logical_device, command_pool, vertices, indices))
 	{
 		std::cerr << "Failed to initialize vertex buffer." << std::endl;
 		return false;
 	}
 
-	if (!command_pool.Initialize(physical_device, logical_device, swapchain, pipeline, framebuffers, renderpass, vertex_buffer))
+	if (!uniform_buffer.Initialize(logical_device))
 	{
-		std::cerr << "Failed to initialize command pool." << std::endl;
+		std::cerr << "Failed to initialize uniform buffer." << std::endl;
+		return false;
+	}
+
+	if (!descriptor_set_layout.TempInitialize(uniform_buffer))
+	{
+		std::cerr << "Temp initialization failed.." << std::endl;
+		return false;
+	}
+
+	if (!command_pool.InitializeCommandBuffers(logical_device, swapchain, pipeline, framebuffers, renderpass, vertex_buffer, descriptor_set_layout))
+	{
+		std::cerr << "Failed to initialize command pool buffers." << std::endl;
 		return false;
 	}
 
@@ -165,6 +190,8 @@ bool Renderer::Initialize(uint32_t width, uint32_t height, std::string title)
 
 bool Renderer::DrawFrame()
 {
+	uniform_buffer.Update(swapchain);
+
 	if (!in_flight_fences[currentFrame].WaitForFence(std::numeric_limits<uint64_t>::max()))
 	{
 		std::cerr << "Failed to wait for fence from drawframe. Exiting..." << std::endl;
@@ -177,7 +204,17 @@ bool Renderer::DrawFrame()
 	}
 
 	uint32_t imageIndex;
-	PVF::vkAcquireNextImageKHR(logical_device.handle, swapchain.handle, std::numeric_limits<uint64_t>::max(), image_available_semaphores[currentFrame].handle, VK_NULL_HANDLE, &imageIndex);
+	auto result = PVF::vkAcquireNextImageKHR(logical_device.handle, swapchain.handle, std::numeric_limits<uint64_t>::max(), image_available_semaphores[currentFrame].handle, VK_NULL_HANDLE, &imageIndex);
+	if (result == VK_SUBOPTIMAL_KHR || result == VK_ERROR_OUT_OF_DATE_KHR)
+	{
+		std::cerr << "Suboptimal KHR or out of date." << std::endl;
+		return false;
+	}
+	else if (result != VK_SUCCESS)
+	{
+		std::cerr << "Result for acquire next image unsuccessful. Result: " << result << std::endl;
+		return false;
+	}
 
 	VkSubmitInfo submitInfo = {};
 	submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
@@ -245,6 +282,10 @@ bool Renderer::ProcessMessages()
 Renderer::~Renderer()
 {
 	logical_device.WaitForAllSubmittedCommandsToFinish();
+
+	descriptor_set_layout.Release();
+
+	uniform_buffer.Release();
 
 	vertex_buffer.Release();
 

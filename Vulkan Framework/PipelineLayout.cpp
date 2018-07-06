@@ -1,7 +1,7 @@
 #include "PipelineLayout.h"
 #include "VulkanFunctions.h"
 
-bool PipelineLayout::Initialize(LogicalDevice & logical_device, Swapchain & swapchain, VkRenderPass renderpass)
+bool PipelineLayout::Initialize(LogicalDevice & logical_device, Swapchain & swapchain, VkRenderPass renderpass, std::vector<DescriptorSetLayout> descriptor_set_layouts)
 {
 	Release();
 
@@ -39,7 +39,7 @@ bool PipelineLayout::Initialize(LogicalDevice & logical_device, Swapchain & swap
 	rasterizer.rasterizerDiscardEnable = VK_FALSE;
 	rasterizer.polygonMode = VK_POLYGON_MODE_FILL;
 	rasterizer.lineWidth = 1.0f;
-	rasterizer.cullMode = VK_CULL_MODE_BACK_BIT;
+	rasterizer.cullMode = VK_CULL_MODE_NONE; //VK_CULL_MODE_BACKBIT
 	rasterizer.frontFace = VK_FRONT_FACE_CLOCKWISE;
 	rasterizer.depthBiasEnable = VK_FALSE;
 
@@ -62,7 +62,8 @@ bool PipelineLayout::Initialize(LogicalDevice & logical_device, Swapchain & swap
 
 	VkPipelineLayoutCreateInfo pipelineLayoutInfo = {};
 	pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-	pipelineLayoutInfo.setLayoutCount = 0;
+	pipelineLayoutInfo.setLayoutCount = 1;
+	pipelineLayoutInfo.pSetLayouts = &descriptor_set_layouts[0].handle;;// &test;
 	pipelineLayoutInfo.pushConstantRangeCount = 0;
 
 	if (PVF::vkCreatePipelineLayout(logical_device.handle, &pipelineLayoutInfo, nullptr, &handle) != VK_SUCCESS)

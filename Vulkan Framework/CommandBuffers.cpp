@@ -1,7 +1,7 @@
 #include "CommandBuffers.h"
 #include "VulkanFunctions.h"
 
-bool CommandBuffers::Initialize(VkCommandPool command_pool, LogicalDevice & logical_device, Swapchain & swapchain, Pipeline & pipeline, Framebuffers & framebuffers, RenderPass & renderpass, VertexBuffer & vertex_buffer)
+bool CommandBuffers::Initialize(VkCommandPool command_pool, LogicalDevice & logical_device, Swapchain & swapchain, Pipeline & pipeline, Framebuffers & framebuffers, RenderPass & renderpass, VertexBuffer & vertex_buffer, DescriptorSetLayout & descriptor_set_layout)
 {
 	Release();
 
@@ -49,11 +49,17 @@ bool CommandBuffers::Initialize(VkCommandPool command_pool, LogicalDevice & logi
 
 		PVF::vkCmdBindPipeline(buffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.handle);
 
-		VkBuffer vertexBuffers[] = { vertex_buffer.handle };
+		VkBuffer vertexBuffers[] = { vertex_buffer.vertex_buffer };
 		VkDeviceSize offsets[] = { 0 };
 		PVF::vkCmdBindVertexBuffers(buffers[i], 0, 1, vertexBuffers, offsets);
 
-		PVF::vkCmdDraw(buffers[i], vertex_buffer.vertex_count, 1, 0, 0);
+		PVF::vkCmdBindIndexBuffer(buffers[i], vertex_buffer.index_buffer, 0, VK_INDEX_TYPE_UINT16);
+
+		//PVF::vkCmdDraw(buffers[i], vertex_buffer.vertex_count, 1, 0, 0);
+
+		PVF::vkCmdBindDescriptorSets(buffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.layout.handle, 0, 1, &descriptor_set_layout.descriptorSet, 0, nullptr);
+
+		PVF::vkCmdDrawIndexed(buffers[i], vertex_buffer.index_count, 1, 0, 0, 0);
 
 		PVF::vkCmdEndRenderPass(buffers[i]);
 

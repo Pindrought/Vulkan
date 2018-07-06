@@ -1,5 +1,5 @@
 #include "Renderer.h"
-#include "Timer.h"
+#include "FPSLimiter.h"
 
 int main()
 {
@@ -7,11 +7,10 @@ int main()
 	uint32_t width = 800;
 	uint32_t height = 600;
 	{
+		FPSLimiter fpslimiter;
 		Renderer r;
 		if (r.Initialize(width, height))
 		{
-			std::cout << "WINDOW DIMENSIONS:           " << width << "x" << height << std::endl;
-			std::cout << "SWAPCHAIN EXTENT DIMENSIONS: " << r.swapchain.extent.width << "x" << r.swapchain.extent.height << std::endl;
 			Timer t;
 			t.Start();
 			int frameCount = 0;
@@ -21,6 +20,7 @@ int main()
 					break;
 				if (!r.DrawFrame())
 					break;
+				fpslimiter.Pulse(1000);
 				frameCount += 1;
 				double elapseTime = t.GetMilisecondsElapsed();
 				if (elapseTime >= 1000)

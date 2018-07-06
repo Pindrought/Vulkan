@@ -158,7 +158,9 @@
     <ClCompile Include="CommandBuffers.cpp" />
     <ClCompile Include="CommandPool.cpp" />
     <ClCompile Include="DebugReport.cpp" />
+    <ClCompile Include="DescriptorSetLayout.cpp" />
     <ClCompile Include="Fence.cpp" />
+    <ClCompile Include="FPSLimiter.cpp" />
     <ClCompile Include="Framebuffers.cpp" />
     <ClCompile Include="LogicalDevice.cpp" />
     <ClCompile Include="PhysicalDevice.cpp" />
@@ -173,6 +175,7 @@
     <ClCompile Include="Source.cpp" />
     <ClCompile Include="Swapchain.cpp" />
     <ClCompile Include="Timer.cpp" />
+    <ClCompile Include="UniformBuffer.cpp" />
     <ClCompile Include="Vertex.cpp" />
     <ClCompile Include="VertexBuffer.cpp" />
     <ClCompile Include="VulkanFunctionLoader.cpp" />
@@ -187,7 +190,9 @@
     <ClInclude Include="Common.h" />
     <ClInclude Include="CustomStructs.h" />
     <ClInclude Include="DebugReport.h" />
+    <ClInclude Include="DescriptorSetLayout.h" />
     <ClInclude Include="Fence.h" />
+    <ClInclude Include="FPSLimiter.h" />
     <ClInclude Include="Framebuffers.h" />
     <ClInclude Include="LogicalDevice.h" />
     <ClInclude Include="PhysicalDevice.h" />
@@ -203,6 +208,7 @@
     <ClInclude Include="Shader.h" />
     <ClInclude Include="Swapchain.h" />
     <ClInclude Include="Timer.h" />
+    <ClInclude Include="UniformBuffer.h" />
     <ClInclude Include="Vertex.h" />
     <ClInclude Include="VertexBuffer.h" />
     <ClInclude Include="VulkanFunctionLoader.h" />
